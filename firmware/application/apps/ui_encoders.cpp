@@ -137,16 +137,17 @@ void EncodersConfigView::draw_waveform() {
 
 void EncodersConfigView::generate_frame() {
 	size_t i = 0;
+	char * word_ptr = (char*)encoder_def->word_format;
 	
 	frame_fragments.clear();
 	
-	for (auto c : encoder_def->word_format) {
-		if (c == 'S')
+	while (*word_ptr) {
+		if (*word_ptr == 'S')
 			frame_fragments += encoder_def->sync;
 		else
 			frame_fragments += encoder_def->bit_format[symfield_word.get_sym(i++)];
+		word_ptr++;
 	}
-	
 	draw_waveform();
 }
 
@@ -156,6 +157,14 @@ uint8_t EncodersConfigView::repeat_min() {
 
 uint32_t EncodersConfigView::samples_per_bit() {
 	return OOK_SAMPLERATE / ((field_clk.value() * 1000) / encoder_def->clk_per_fragment);
+}
+
+uint16_t EncodersConfigView::repeat_skip_bits_count() {
+	return encoder_def->skip_repeat_bits ? strlen(encoder_def->sync) : 0;
+}
+
+uint16_t EncodersConfigView::sin_carrier_step() {
+	return encoder_def->sin_carrier_step;
 }
 
 uint32_t EncodersConfigView::pause_symbols() {
@@ -306,15 +315,15 @@ void EncodersView::start_tx(const bool scan) {
 	view_config.generate_frame();
 	
 	bitstream_length = make_bitstream(view_config.frame_fragments);
-
 	transmitter_model.set_sampling_rate(OOK_SAMPLERATE);
 	transmitter_model.set_rf_amp(true);
 	transmitter_model.set_baseband_bandwidth(1750000);
 	transmitter_model.enable();
-	
 	baseband::set_ook_data(
 		bitstream_length,
 		view_config.samples_per_bit(),
+		view_config.repeat_skip_bits_count(),
+		view_config.sin_carrier_step(),
 		repeat_min,
 		view_config.pause_symbols()
 	);
