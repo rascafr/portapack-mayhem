@@ -1706,7 +1706,7 @@ void Waveform::paint(Painter& painter) {
 		x = 0;
 		h--;
 		for (n = 0; n < length_; n++) {
-			y = *(data_start++) ? h : 0;
+			y = *(data_start++) ? 0 : h;
 			
 			if (n) {
 				if (y != prev_y)
