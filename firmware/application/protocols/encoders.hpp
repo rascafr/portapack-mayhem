@@ -29,10 +29,11 @@
 
 namespace encoders {
 	
-	#define ENC_TYPES_COUNT 14
-	#define OOK_SAMPLERATE	2280000U
+	#define ENC_TYPES_COUNT 	17
+	#define OOK_SAMPLERATE		2280000U
+	#define OOK_DEFAULT_STEP 	8	// 70 kHz carrier frequency
 	
-	#define ENCODER_UM3750	8
+	#define ENCODER_UM3750		11
 	
 	size_t make_bitstream(std::string& fragments);
 	void bitstream_append(size_t& bitstream_length, uint32_t bit_count, uint32_t bits);
@@ -54,6 +55,42 @@ namespace encoders {
 
 	// Warning ! If this is changed, make sure that ENCODER_UM3750 is still valid !
 	constexpr encoder_def_t encoder_defs[ENC_TYPES_COUNT] = {
+		// Test Doorbell
+		{
+			"Doorbel",
+			"01", "01",
+			228, 57,
+			{ "1000", "1110" },
+			24,	"AAAAAAAAAAAAAAAAAAAAAAAA",
+			"",
+			141260, 32, // repeat=32
+			32
+		},
+
+		// Test Garage Door
+		{
+			"OH200DC",
+			"01", "01",
+			920, 115,
+			{ "10000000", "11110000" },
+			8,	"AAAAAAAA",
+			"",
+			285000, 8, // repeat=230, looks like 8 was enough
+			70
+		},
+
+		// Unknown test Device OOK
+		{
+			"TestOOK",
+			"01", "01",
+			392, 96,
+			{ "0011", "0111" },
+			20,	"SAAAAAAAAAADDDDDDDDDD",
+			"111111111111111111100000",
+			228000, 8,
+			6
+		},
+
 		// PT2260-R2
 		{
 			"2260-R2",
